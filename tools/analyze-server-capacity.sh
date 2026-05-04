@@ -67,7 +67,7 @@ echo ""
     echo "==============================================="
     
     CPU_CORES=$(nproc)
-    CPU_THREADS=$(($(grep -c ^processor /proc/cpuinfo) || echo "1"))
+    CPU_THREADS=$(grep -c '^processor' /proc/cpuinfo 2>/dev/null || printf '1')
     
     echo "Physical CPU Cores: $CPU_CORES"
     echo "Logical CPU Threads: $CPU_THREADS"
@@ -84,7 +84,8 @@ echo ""
     
     # Get CPU flags
     CPU_FLAGS=$(grep "flags" /proc/cpuinfo | head -1 | cut -d: -f2 | xargs)
-    echo "CPU Flags (selected): $(echo $CPU_FLAGS | grep -o 'sse\|avx\|aes\|virt|pae' | tr '\n' ',' | sed 's/,$//')"
+    SELECTED_FLAGS=$(printf '%s' "$CPU_FLAGS" | grep -Eo 'sse|avx|aes|virt|pae' | paste -sd ',' - 2>/dev/null || true)
+    echo "CPU Flags (selected): ${SELECTED_FLAGS:-none detected}"
     echo ""
     
     # ===== SECTION 2: MEMORY ANALYSIS =====
