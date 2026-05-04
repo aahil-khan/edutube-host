@@ -206,8 +206,8 @@ function loadReadOnlyStudentFlow(session) {
     { method: 'GET', url: `${WEB_BASE}/api/courses/browse`, jar: session.jar, tags: { endpoint: 'courses-browse' } },
     { method: 'GET', url: `${WEB_BASE}/api/teachers?page=1&limit=12`, jar: session.jar, tags: { endpoint: 'teachers-list' } },
     { method: 'GET', url: `${WEB_BASE}/api/quick-search?q=thapar&limit=8`, jar: session.jar, tags: { endpoint: 'quick-search' } },
-    { method: 'GET', url: `${WEB_BASE}/api/search?q=thapar&type=teachers`, jar: session.jar, tags: { endpoint: 'search-teachers' } },
-    { method: 'GET', url: `${WEB_BASE}/api/search?q=course&type=courses`, jar: session.jar, tags: { endpoint: 'search-courses' } },
+    { method: 'POST', url: `${WEB_BASE}/api/search`, body: JSON.stringify({ query: 'thapar', type: 'teachers', page: 1, limit: 10 }), params: { headers: { 'Content-Type': 'application/json' } }, jar: session.jar, tags: { endpoint: 'search-teachers' } },
+    { method: 'POST', url: `${WEB_BASE}/api/search`, body: JSON.stringify({ query: 'course', type: 'courses', page: 1, limit: 10 }), params: { headers: { 'Content-Type': 'application/json' } }, jar: session.jar, tags: { endpoint: 'search-courses' } },
     { method: 'GET', url: `${WEB_BASE}/api/watch-history/recent?limit=5`, jar: session.jar, tags: { endpoint: 'watch-recent' } },
   ]);
 
