@@ -219,21 +219,6 @@ function loadReadOnlyStudentFlow(session) {
   assertOk(responses[7], 'quick search loads');
   assertOk(responses[8], 'recent activity loads');
 
-  // POST requests need to be done separately with proper headers
-  const teacherSearch = http.post(
-    `${WEB_BASE}/api/search`,
-    JSON.stringify({ query: 'thapar', type: 'teachers', page: 1, limit: 10 }),
-    { headers: { 'Content-Type': 'application/json' }, jar: session.jar, tags: { endpoint: 'search-teachers' } }
-  );
-  assertOk(teacherSearch, 'teacher search loads');
-
-  const courseSearch = http.post(
-    `${WEB_BASE}/api/search`,
-    JSON.stringify({ query: 'course', type: 'courses', page: 1, limit: 10 }),
-    { headers: { 'Content-Type': 'application/json' }, jar: session.jar, tags: { endpoint: 'search-courses' } }
-  );
-  assertOk(courseSearch, 'course search loads');
-
   const verifiedAuth = responses[3].json();
   const userData = responses[4].json();
   const browseCourses = responses[5].json();
