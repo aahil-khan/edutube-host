@@ -64,18 +64,51 @@ services:
       timeout: 5s
       retries: 5
 
+  # Frontend Load Balancer
+  frontend-lb:
+    image: nginx:alpine
+    container_name: edutube-frontend-lb
+    ports:
+      - "4000:80"
+    volumes:
+      - ./nginx/frontend.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+    networks:
+      - edutube-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Load Balancer
+  backend-lb:
+    image: nginx:alpine
+    container_name: edutube-backend-lb
+    ports:
+      - "5001:80"
+    volumes:
+      - ./nginx/backend.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - edutube-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Backend API
   backend:
     build:
       context: ./edutube-backend
       dockerfile: Dockerfile
-    container_name: edutube-backend
     env_file:
       - .env.production
     environment:
       - PORT=5001
-    ports:
-      - "5001:5001"
     depends_on:
       postgres:
         condition: service_healthy
@@ -91,13 +124,10 @@ services:
     build:
       context: ./edutube
       dockerfile: Dockerfile
-    container_name: edutube-frontend
     env_file:
       - .env.production
     environment:
       - PORT=4000
-    ports:
-      - "4000:4000"
     depends_on:
       - postgres
       - redis
