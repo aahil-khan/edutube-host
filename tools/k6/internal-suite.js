@@ -206,8 +206,6 @@ function loadReadOnlyStudentFlow(session) {
     { method: 'GET', url: `${WEB_BASE}/api/courses/browse`, jar: session.jar, tags: { endpoint: 'courses-browse' } },
     { method: 'GET', url: `${WEB_BASE}/api/teachers?page=1&limit=12`, jar: session.jar, tags: { endpoint: 'teachers-list' } },
     { method: 'GET', url: `${WEB_BASE}/api/quick-search?q=thapar&limit=8`, jar: session.jar, tags: { endpoint: 'quick-search' } },
-    { method: 'POST', url: `${WEB_BASE}/api/search`, body: JSON.stringify({ query: 'thapar', type: 'teachers', page: 1, limit: 10 }), params: { headers: { 'Content-Type': 'application/json' } }, jar: session.jar, tags: { endpoint: 'search-teachers' } },
-    { method: 'POST', url: `${WEB_BASE}/api/search`, body: JSON.stringify({ query: 'course', type: 'courses', page: 1, limit: 10 }), params: { headers: { 'Content-Type': 'application/json' } }, jar: session.jar, tags: { endpoint: 'search-courses' } },
     { method: 'GET', url: `${WEB_BASE}/api/watch-history/recent?limit=5`, jar: session.jar, tags: { endpoint: 'watch-recent' } },
   ]);
 
@@ -219,9 +217,22 @@ function loadReadOnlyStudentFlow(session) {
   assertOk(responses[5], 'course browse loads');
   assertOk(responses[6], 'teachers list loads');
   assertOk(responses[7], 'quick search loads');
-  assertOk(responses[8], 'teacher search loads');
-  assertOk(responses[9], 'course search loads');
-  assertOk(responses[10], 'recent activity loads');
+  assertOk(responses[8], 'recent activity loads');
+
+  // POST requests need to be done separately with proper headers
+  const teacherSearch = http.post(
+    `${WEB_BASE}/api/search`,
+    JSON.stringify({ query: 'thapar', type: 'teachers', page: 1, limit: 10 }),
+    { headers: { 'Content-Type': 'application/json' }, jar: session.jar, tags: { endpoint: 'search-teachers' } }
+  );
+  assertOk(teacherSearch, 'teacher search loads');
+
+  const courseSearch = http.post(
+    `${WEB_BASE}/api/search`,
+    JSON.stringify({ query: 'course', type: 'courses', page: 1, limit: 10 }),
+    { headers: { 'Content-Type': 'application/json' }, jar: session.jar, tags: { endpoint: 'search-courses' } }
+  );
+  assertOk(courseSearch, 'course search loads');
 
   const verifiedAuth = responses[3].json();
   const userData = responses[4].json();
