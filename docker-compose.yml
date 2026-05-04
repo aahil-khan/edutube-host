@@ -1,0 +1,113 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: edutube-postgres
+    environment:
+      POSTGRES_DB: Video_Portal_Dummy
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pgadmin
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - edutube-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db-seed:
+    image: postgres:15-alpine
+    container_name: edutube-postgres-seed
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: pgadmin
+    networks:
+      - edutube-network
+    volumes:
+      - ./edutube-backend/dump/Video_Portal_Dummy_20250926_195641.dump:/dump/seed.dump:ro
+    # Idempotent: on redeploy the Postgres volume already has data — pg_restore --clean would still
+    # conflict in many cases. Skip restore when `users` already has rows.
+    entrypoint:
+      - sh
+      - -c
+      - |
+          set -e
+          until pg_isready -h postgres -U postgres; do sleep 1; done
+          ROWS=$$(psql -h postgres -U postgres -d Video_Portal_Dummy -t -A -c "SELECT COUNT(*) FROM users" 2>/dev/null || echo "")
+          if [ -n "$$ROWS" ] && [ "$$ROWS" -gt 0 ] 2>/dev/null; then
+            echo "db-seed: database already contains data (users count=$$ROWS), skipping pg_restore"
+            exit 0
+          fi
+          echo "db-seed: restoring dump into empty database..."
+          pg_restore --clean --if-exists --no-owner --role=postgres -h postgres -U postgres -d Video_Portal_Dummy /dump/seed.dump
+    restart: "no"
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: edutube-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - edutube-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./edutube-backend
+      dockerfile: Dockerfile
+    container_name: edutube-backend
+    env_file:
+      - .env.production
+    environment:
+      - PORT=5001
+    ports:
+      - "5001:5001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      db-seed:
+        condition: service_completed_successfully
+    networks:
+      - edutube-network
+
+  # Frontend
+  frontend:
+    build:
+      context: ./edutube
+      dockerfile: Dockerfile
+    container_name: edutube-frontend
+    env_file:
+      - .env.production
+    environment:
+      - PORT=4000
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - edutube-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  edutube-network:
+    driver: bridge

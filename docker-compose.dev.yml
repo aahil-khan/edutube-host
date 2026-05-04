@@ -1,0 +1,125 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: edutube-postgres-dev
+    environment:
+      POSTGRES_DB: Video_Portal_Dummy
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pgadmin
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - edutube-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: edutube-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - edutube-network
+
+  # Elasticsearch
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: edutube-elasticsearch-dev
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_dev_data:/usr/share/elasticsearch/data
+    networks:
+      - edutube-network
+
+  # Backend API (Development)
+  backend-dev:
+    build:
+      context: ./edutube-backend
+      dockerfile: Dockerfile.dev
+    container_name: edutube-backend-dev
+    environment:
+      - NODE_ENV=development
+      - PORT=5001
+      - DATABASE_URL=postgresql://postgres:pgadmin@postgres:5432/Video_Portal_Dummy
+      - REDIS_URL=redis://redis:6379
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ACCESS_SECRET_KEY=your_access_secret_key_here
+      - REFRESH_SECRET_KEY=your_refresh_secret_key_here
+    ports:
+      - "5001:5001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      elasticsearch:
+        condition: service_started
+      db-seed-dev:
+        condition: service_completed_successfully
+    networks:
+      - edutube-network
+    volumes:
+      - ./edutube-backend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Frontend (Development)
+  frontend-dev:
+    build:
+      context: ./edutube
+      dockerfile: Dockerfile.dev
+    container_name: edutube-frontend-dev
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - NEXT_PUBLIC_API_URL=http://localhost:5001
+    ports:
+      - "4000:4000"
+    depends_on:
+      - backend-dev
+    networks:
+      - edutube-network
+    volumes:
+      - ./edutube:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+  db-seed-dev:
+    image: postgres:15-alpine
+    container_name: edutube-postgres-seed-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: pgadmin
+    networks:
+      - edutube-network
+    volumes:
+      - ./edutube-backend/dump/Video_Portal_Dummy_20250926_195641.dump:/dump/seed.dump:ro
+    entrypoint: ["sh", "-c", "until pg_isready -h postgres -U postgres; do sleep 1; done; pg_restore --clean --if-exists --no-owner --role=postgres -h postgres -U postgres -d Video_Portal_Dummy /dump/seed.dump"]
+    restart: "no"
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+  elasticsearch_dev_data:
+
+networks:
+  edutube-network:
+    driver: bridge

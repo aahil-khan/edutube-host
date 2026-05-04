@@ -1,0 +1,85 @@
+# Environment files (contains secrets - DO NOT COMMIT)
+.env
+.env.production
+.env.production.local
+.env.local
+.env.*.local
+
+# Docker volumes and data (local development)
+postgres_data/
+redis_data/
+elasticsearch_data/
+postgres_dev_data/
+redis_dev_data/
+elasticsearch_dev_data/
+
+# Dumps and backups
+dump/
+*.dump
+*.sql
+backup/
+*.backup
+
+# Logs
+*.log
+logs/
+docker-compose.log
+
+# Node modules (in submodules)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.Python
+venv/
+env/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.sublime-project
+*.sublime-workspace
+
+# Analysis reports
+edutube_server_analysis_*.txt
+edutube_load_test_*.txt
+server_comparison_*.txt
+
+# Provision and deployment logs
+/var/log/edutube-provision.log
+*.provision.log
+
+# Temporary files
+*.tmp
+.tmp/
+temp/
+*.temp
+
+# OS files
+.DS_Store
+Thumbs.db
+.directory
+
+# Git
+.git/
+.gitmodules
+.gitattributes
+
+# Dependencies lock files (allow these to be committed)
+!package-lock.json
+!yarn.lock
+
+# Misc
+cookies.txt
+.cursor/
+.history/
