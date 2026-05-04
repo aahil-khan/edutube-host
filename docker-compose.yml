@@ -30,7 +30,7 @@ services:
     networks:
       - edutube-network
     volumes:
-      - ./edutube-backend/dump/Video_Portal_Dummy_20250926_195641.dump:/dump/seed.dump:ro
+      - ./edutube-backend/dump/latest.dump:/dump/seed.dump:ro
     # Idempotent: on redeploy the Postgres volume already has data — pg_restore --clean would still
     # conflict in many cases. Skip restore when `users` already has rows.
     entrypoint:
