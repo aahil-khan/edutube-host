@@ -4,7 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-DUMP_FILE="$ROOT_DIR/edutube-backend/dump/Video_Portal_Dummy_20250926_195641.dump"
+DUMP_FILE="$ROOT_DIR/edutube-backend/dump/latest.dump"
 
 if docker compose version &>/dev/null; then
     DC="docker compose"
