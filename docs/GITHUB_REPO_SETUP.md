@@ -36,7 +36,7 @@ And a local folder `/opt/edutube-host/` that coordinates them.
 
 **Step 2: Clone and populate locally**
 ```bash
-git clone https://github.com/YOUR-USERNAME/edutube-host.git
+git clone --recurse-submodules https://github.com/YOUR-USERNAME/edutube-host.git
 cd edutube-host
 
 # Add existing subdirectories as submodules
@@ -80,6 +80,12 @@ git commit -m "Initial commit: EduTube deployment configuration"
 git remote add origin https://github.com/YOUR-USERNAME/edutube-host.git
 git branch -M main
 git push -u origin main
+```
+
+**After the first push:**
+```bash
+git submodule status
+git submodule update --init --recursive
 ```
 
 ---

@@ -72,7 +72,6 @@ Thumbs.db
 
 # Git
 .git/
-.gitmodules
 .gitattributes
 
 # Dependencies lock files (allow these to be committed)

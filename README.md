@@ -43,9 +43,9 @@ For complete documentation, see [`docs/README.md`](docs/README.md)
 ## Architecture
 
 ### Services
-- **Frontend**: `edutube/` - Next.js 15.1.2 application
-- **Backend**: `edutube-backend/` - Express.js REST API
-- **CLI**: `edutube-cli/` - Command-line utilities
+- **Frontend**: `edutube/` - Next.js 15.1.2 application submodule
+- **Backend**: `edutube-backend/` - Express.js REST API submodule
+- **CLI**: `edutube-cli/` - Command-line utilities submodule
 
 ### Core Files
 - `docker-compose.yml` - Production services configuration
@@ -80,9 +80,9 @@ edutube-host/
 │   ├── QUICK_START.sh          Quick reference
 │   └── README.md               Tools documentation
 │
-├── edutube/                    Frontend (Next.js)
-├── edutube-backend/            Backend (Express.js)
-├── edutube-cli/                CLI utilities
+├── edutube/                    Frontend (git submodule)
+├── edutube-backend/            Backend (git submodule)
+├── edutube-cli/                CLI utilities (git submodule)
 │
 ├── docker-compose.yml          Production config
 ├── docker-compose.dev.yml      Development config
@@ -106,6 +106,13 @@ docker-compose -f docker-compose.yml ps
 
 # View logs
 docker-compose -f docker-compose.yml logs -f backend
+```
+
+### Clone With Submodules
+```bash
+git clone --recurse-submodules https://github.com/aahil-khan/edutube-host.git
+cd edutube-host
+git submodule update --init --recursive
 ```
 
 ### Deployment

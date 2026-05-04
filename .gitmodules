@@ -1,0 +1,12 @@
+[submodule "edutube"]
+	path = edutube
+	url = https://github.com/Dean-DCT-Thapar/edutube.git
+	branch = main
+[submodule "edutube-backend"]
+	path = edutube-backend
+	url = https://github.com/aahil-khan/edutube-backend.git
+	branch = main
+[submodule "edutube-cli"]
+	path = edutube-cli
+	url = https://github.com/aahil-khan/edutube-cli.git
+	branch = main
