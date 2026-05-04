@@ -28,7 +28,7 @@ NC='\033[0m'
 
 # Configuration
 DEPLOY_NOW="${1:-no}"
-REPO_URL="${EDUTUBE_REPO_URL:-https://github.com/Dean-DCT-Thapar/edutube-host.git}"
+REPO_URL="${EDUTUBE_REPO_URL:-https://github.com/aahil-khan/edutube-host.git}"
 INSTALL_DIR="/opt/edutube"
 LOG_FILE="/var/log/edutube-provision.log"
 
