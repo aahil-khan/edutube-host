@@ -100,6 +100,10 @@ function createSession() {
   };
 }
 
+function pickFirst(array) {
+  return Array.isArray(array) && array.length > 0 ? array[0] : null;
+}
+
 function pickCredential() {
   return CREDENTIALS[(__VU - 1) % CREDENTIALS.length];
 }
