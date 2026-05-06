@@ -97,9 +97,12 @@ if ! $DC up db-seed; then
 fi
 
 print_step "Applying Prisma migrations..."
-$DC run --rm --no-deps backend \
-  npx prisma migrate resolve --rolled-back 20260208120000_add_cli_api_key_and_lecture_cli_fields \
-  2>/dev/null || true
+print_step "Checking Prisma migration status..."
+if ! $DC run --rm --no-deps backend npx prisma migrate status; then
+  print_error "Prisma migration status check failed."
+  print_error "If schema changed, ensure a migration exists in prisma/migrations."
+  exit 1
+fi
 
 MIGRATE_OK=0
 for i in $(seq 1 25); do
@@ -118,6 +121,12 @@ if [ "$MIGRATE_OK" -ne 1 ]; then
   exit 1
 fi
 print_success "Migrations applied"
+
+print_step "Verifying database is at latest migration..."
+if ! $DC run --rm --no-deps backend npx prisma migrate status; then
+  print_error "Database is not aligned with latest migration history."
+  exit 1
+fi
 
 print_step "Redeploying backend without full stack teardown..."
 $DC up -d --no-deps backend

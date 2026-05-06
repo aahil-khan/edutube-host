@@ -90,11 +90,12 @@ if ! $DC up db-seed; then
 fi
 
 print_step "Applying Prisma migrations (one-shot backend container)..."
-# If a prior deploy left this migration in "failed" (P3009), clear it so the idempotent
-# migration.sql can apply. Harmless when there is nothing to resolve.
-$DC run --rm --no-deps backend \
-    npx prisma migrate resolve --rolled-back 20260208120000_add_cli_api_key_and_lecture_cli_fields \
-    2>/dev/null || true
+print_step "Checking Prisma migration status..."
+if ! $DC run --rm --no-deps backend npx prisma migrate status; then
+    print_error "Prisma migration status check failed."
+    print_error "If schema changed, ensure a migration exists in prisma/migrations."
+    exit 1
+fi
 
 # --no-deps: do NOT start db-seed again (backend depends_on db-seed; without this, every
 # retry re-ran pg_restore and failed with duplicate keys on an already-seeded volume).
@@ -115,6 +116,12 @@ if [ "$MIGRATE_OK" -ne 1 ]; then
     print_error "prisma migrate deploy failed after retries"
     print_error "Check: $DC logs postgres"
     print_error "Hint: $DC run --rm --no-deps backend npx prisma migrate deploy"
+    exit 1
+fi
+
+print_step "Verifying database is at latest migration..."
+if ! $DC run --rm --no-deps backend npx prisma migrate status; then
+    print_error "Database is not aligned with latest migration history."
     exit 1
 fi
 
