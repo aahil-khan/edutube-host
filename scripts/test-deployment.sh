@@ -53,10 +53,10 @@ fi
 
 echo ""
 echo "🔍 Monitoring Stack Tests:"
-test_endpoint "http://localhost:9090/-/healthy" "Prometheus health endpoint"
-test_endpoint "http://localhost:3001/api/health" "Grafana health endpoint"
-test_endpoint "http://localhost:3100/ready" "Loki ready endpoint"
-test_endpoint "http://localhost:9093/-/healthy" "Alertmanager health endpoint"
+test_endpoint "http://localhost/monitoring/prometheus/-/healthy" "Prometheus health endpoint (via Nginx)"
+test_endpoint "http://localhost/monitoring/grafana/api/health" "Grafana health endpoint (via Nginx)"
+test_endpoint "http://localhost/monitoring/loki/ready" "Loki ready endpoint (via Nginx)"
+test_endpoint "http://localhost/monitoring/alertmanager/-/healthy" "Alertmanager health endpoint (via Nginx)"
 
 echo ""
 echo "🐳 Docker Container Status:"

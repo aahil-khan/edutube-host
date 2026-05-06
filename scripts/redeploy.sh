@@ -164,10 +164,10 @@ test_http_health() {
   return 1
 }
 
-test_http_health "http://localhost:9090/-/healthy" "Prometheus" 30 || true
-test_http_health "http://localhost:3001/api/health" "Grafana" 30 || true
-test_http_health "http://localhost:3100/ready" "Loki" 30 || true
-test_http_health "http://localhost:9093/-/healthy" "Alertmanager" 30 || true
+test_http_health "http://localhost/monitoring/prometheus/-/healthy" "Prometheus" 30 || true
+test_http_health "http://localhost/monitoring/grafana/api/health" "Grafana" 30 || true
+test_http_health "http://localhost/monitoring/loki/ready" "Loki" 30 || true
+test_http_health "http://localhost/monitoring/alertmanager/-/healthy" "Alertmanager" 30 || true
 
 print_step "Waiting for frontend health..."
 FRONTEND_OK=0
@@ -192,9 +192,9 @@ echo ""
 print_success "Redeploy complete."
 echo -e "${BLUE}Frontend:${NC} http://localhost"
 echo -e "${BLUE}Backend API:${NC}  http://localhost/api"
-echo -e "${BLUE}Prometheus:${NC}   http://localhost:9090"
-echo -e "${BLUE}Grafana:${NC}      http://localhost:3001 (admin/admin)"
-echo -e "${BLUE}Loki:${NC}         http://localhost:3100"
-echo -e "${BLUE}Alertmanager:${NC} http://localhost:9093"
+echo -e "${BLUE}Prometheus:${NC}   http://localhost/monitoring/prometheus/"
+echo -e "${BLUE}Grafana:${NC}      http://localhost/monitoring/grafana/ (admin/admin)"
+echo -e "${BLUE}Loki:${NC}         http://localhost/monitoring/loki/"
+echo -e "${BLUE}Alertmanager:${NC} http://localhost/monitoring/alertmanager/"
 echo ""
 print_warning "Note: services now stay on the private Docker network; only Nginx is published on the host."

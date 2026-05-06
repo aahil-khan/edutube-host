@@ -5,10 +5,10 @@ single-node Docker Compose deployments that may run multiple frontend/backend re
 
 ## Included Components
 
-- Prometheus (`http://localhost:9090`)
-- Grafana (`http://localhost:3001`, default `admin/admin`)
-- Loki (`http://localhost:3100`)
-- Alertmanager (`http://localhost:9093`)
+- Prometheus (`/monitoring/prometheus/` via Nginx)
+- Grafana (`/monitoring/grafana/` via Nginx, default `admin/admin`)
+- Loki (`/monitoring/loki/` via Nginx)
+- Alertmanager (`/monitoring/alertmanager/` via Nginx)
 - Promtail (log shipping)
 - cAdvisor (container metrics source)
 
@@ -45,3 +45,4 @@ Alert rules are in `monitoring/prometheus/alerts.yml`.
 - Change Grafana default admin password in production.
 - A starter Grafana dashboard is auto-provisioned at UID `edutube-starter`.
 - Admin UI quick access is available at `/admin-dashboard/monitoring`.
+- Monitoring ports are not published on the host; use Nginx paths on your server IP/domain.
