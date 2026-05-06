@@ -24,7 +24,7 @@ NC='\033[0m'
 
 # Defaults
 TEST_TYPE="${1:-basic}"
-TARGET_URL="${2:-http://localhost:3000}"
+TARGET_URL="${2:-http://localhost}"
 DURATION="${3:-300}"  # 5 minutes default
 CONCURRENT_USERS="${4:-50}"
 

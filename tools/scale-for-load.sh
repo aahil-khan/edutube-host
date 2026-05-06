@@ -7,8 +7,17 @@ set -euo pipefail
 BACKEND=${1:-2}
 FRONTEND=${2:-2}
 
+if docker compose version >/dev/null 2>&1; then
+	DC="docker compose"
+else
+	DC="docker-compose"
+fi
+
 echo "Scaling backend to $BACKEND and frontend to $FRONTEND (postgres/redis remain 1)"
 
-docker-compose up -d --build --scale backend="$BACKEND" --scale frontend="$FRONTEND"
+$DC up -d --build --scale backend="$BACKEND" --scale frontend="$FRONTEND"
+
+echo "Refreshing backend/frontend load balancers"
+$DC up -d --force-recreate backend-lb frontend-lb
 
 echo "Scaled. Use 'docker-compose ps' to verify containers and 'docker-compose logs -f' to monitor."

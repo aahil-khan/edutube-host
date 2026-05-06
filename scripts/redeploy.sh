@@ -51,18 +51,28 @@ $DC up -d postgres redis
 
 print_step "Waiting for PostgreSQL readiness..."
 PG_READY=0
+PG_CONTAINER_ID=""
 for i in $(seq 1 120); do
-  PG_HEALTH="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' edutube-postgres 2>/dev/null || true)"
-  if [ "$PG_HEALTH" = "healthy" ]; then
-    PG_READY=1
-    break
+  if [ -z "$PG_CONTAINER_ID" ]; then
+    PG_CONTAINER_ID="$($DC ps -q postgres 2>/dev/null || true)"
   fi
 
-  # Fallback probe in case healthcheck metadata is unavailable.
-  if docker exec edutube-postgres sh -lc 'pg_isready -U "${POSTGRES_USER:-postgres}" -d "${POSTGRES_DB:-postgres}"' > /dev/null 2>&1; then
-    PG_READY=1
-    break
+  if [ -n "$PG_CONTAINER_ID" ]; then
+    PG_HEALTH="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$PG_CONTAINER_ID" 2>/dev/null || true)"
+    if [ "$PG_HEALTH" = "healthy" ]; then
+      PG_READY=1
+      break
+    fi
+
+    # Fallback probe in case healthcheck metadata is unavailable.
+    if docker exec "$PG_CONTAINER_ID" sh -lc 'pg_isready -U "${POSTGRES_USER:-postgres}" -d "${POSTGRES_DB:-postgres}"' > /dev/null 2>&1; then
+      PG_READY=1
+      break
+    fi
+  else
+    PG_HEALTH="none"
   fi
+
   if [ "$i" -eq 1 ] || [ $((i % 15)) -eq 0 ]; then
     if [ -n "$PG_HEALTH" ] && [ "$PG_HEALTH" != "none" ]; then
       print_warning "PostgreSQL still starting... ($i/120, health=$PG_HEALTH)"
@@ -115,7 +125,7 @@ $DC up -d --no-deps backend
 print_step "Waiting for backend health..."
 BACKEND_OK=0
 for i in $(seq 1 40); do
-  if curl -fsS http://localhost:5001/health > /dev/null 2>&1; then
+  if $DC exec -T backend node -e "require('http').get('http://127.0.0.1:5001/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"; then
     BACKEND_OK=1
     break
   fi
@@ -131,10 +141,13 @@ print_success "Backend healthy"
 print_step "Redeploying frontend without full stack teardown..."
 $DC up -d --no-deps frontend
 
+print_step "Refreshing edge nginx proxy..."
+$DC up -d --no-deps --force-recreate nginx
+
 print_step "Waiting for frontend health..."
 FRONTEND_OK=0
 for i in $(seq 1 40); do
-  if curl -fsS http://localhost:4000 > /dev/null 2>&1; then
+  if $DC exec -T frontend node -e "require('http').get('http://127.0.0.1:4000', (res) => process.exit(res.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))"; then
     FRONTEND_OK=1
     break
   fi
@@ -152,7 +165,7 @@ $DC ps
 
 echo ""
 print_success "Redeploy complete."
-echo -e "${BLUE}Frontend:${NC} http://localhost:4000"
-echo -e "${BLUE}Backend:${NC}  http://localhost:5001"
+echo -e "${BLUE}Frontend:${NC} http://localhost"
+echo -e "${BLUE}Backend API:${NC}  http://localhost/api"
 echo ""
-print_warning "Note: with fixed host ports and single containers, each service may see a brief restart blip during its own container replacement."
+print_warning "Note: services now stay on the private Docker network; only Nginx is published on the host."

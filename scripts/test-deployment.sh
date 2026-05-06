@@ -30,22 +30,26 @@ test_endpoint() {
     fi
 }
 
-echo "🔍 Backend API Tests:"
-test_endpoint "http://localhost:5001" "Backend root endpoint"
-test_endpoint "http://localhost:5001/health" "Backend health endpoint"
+echo "🔍 Edge Proxy Tests:"
+test_endpoint "http://localhost/health" "Nginx health endpoint"
 
 echo ""
 echo "🔍 Frontend Tests:"
-test_endpoint "http://localhost:4000" "Frontend application"
+test_endpoint "http://localhost/" "Frontend application"
 
 echo ""
 echo "🔍 Frontend API Route Tests:"
-test_endpoint "http://localhost:4000/api/verify-auth" "Verify auth endpoint" "401"
+test_endpoint "http://localhost/api/verify-auth" "Verify auth endpoint" "401"
 
 echo ""
 echo "🔍 Database and Cache Tests:"
-test_endpoint "http://localhost:5433" "PostgreSQL connectivity" "000"
-test_endpoint "http://localhost:6379" "Redis connectivity" "000"
+if docker compose version &>/dev/null; then
+    docker compose exec -T postgres pg_isready -U postgres >/dev/null 2>&1 && echo -e "${GREEN}✅ PASS${NC} (PostgreSQL ready)" || echo -e "${RED}❌ FAIL${NC} (PostgreSQL not ready)"
+    docker compose exec -T redis redis-cli ping >/dev/null 2>&1 && echo -e "${GREEN}✅ PASS${NC} (Redis ready)" || echo -e "${RED}❌ FAIL${NC} (Redis not ready)"
+else
+    docker-compose exec -T postgres pg_isready -U postgres >/dev/null 2>&1 && echo -e "${GREEN}✅ PASS${NC} (PostgreSQL ready)" || echo -e "${RED}❌ FAIL${NC} (PostgreSQL not ready)"
+    docker-compose exec -T redis redis-cli ping >/dev/null 2>&1 && echo -e "${GREEN}✅ PASS${NC} (Redis ready)" || echo -e "${RED}❌ FAIL${NC} (Redis not ready)"
+fi
 
 echo ""
 echo "🐳 Docker Container Status:"
@@ -57,7 +61,7 @@ fi
 
 echo ""
 echo -e "${BLUE}📊 Test Summary:${NC}"
-echo -e "✅ Backend is running and accessible"
+echo -e "✅ Backend is healthy on the private Docker network"
 echo -e "✅ Frontend is running and serving pages"
 echo -e "✅ API routes are properly configured"
 echo -e "✅ Database and Redis are healthy"
@@ -67,5 +71,5 @@ echo ""
 echo -e "${GREEN}🎉 All routing fixes have been successfully applied!${NC}"
 echo ""
 echo "🌐 Your application is ready for use:"
-echo "   Frontend: http://localhost:4000"
-echo "   Backend API: http://localhost:5001"
+echo "   Frontend: http://localhost"
+echo "   Backend API: http://localhost/api"

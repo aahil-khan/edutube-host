@@ -47,6 +47,12 @@ For complete documentation, see [`docs/README.md`](docs/README.md)
 - **Backend**: `edutube-backend/` - Express.js REST API submodule
 - **CLI**: `edutube-cli/` - Command-line utilities submodule
 
+### Runtime Layout
+- **Public entrypoint**: Nginx on port 80 only
+- **Frontend**: internal Next.js service on port 4000
+- **Backend**: internal Express service on port 5001
+- **Database/Cache**: private Docker network only
+
 ### Core Files
 - `docker-compose.yml` - Production services configuration
 - `docker-compose.dev.yml` - Development configuration
@@ -133,7 +139,7 @@ bash scripts/test-deployment.sh
 bash tools/analyze-server-capacity.sh
 
 # Run load tests
-bash tools/run-load-test.sh basic http://localhost:3000 300 50
+bash tools/run-load-test.sh basic http://localhost 300 50
 
 # Compare servers
 bash tools/compare-servers.sh current.txt new.txt
@@ -172,18 +178,20 @@ edutube-analyze
    ```
    DATABASE_URL=postgresql://...
    JWT_SECRET=your-secret-key
-   API_URL=http://your-server:5001
-   FRONTEND_URL=http://your-server:3000
+   BACKEND_URL=http://backend:5001
+   API_URL=http://your-server/api
+   FRONTEND_URL=http://your-server
    NODE_ENV=production
    ```
 
 ### Docker Services
 
 Services defined in `docker-compose.yml`:
-- **postgres** - PostgreSQL database
-- **redis** - Redis cache
-- **backend** - Express.js API
-- **frontend** - Next.js application
+- **nginx** - Public reverse proxy on port 80
+- **postgres** - PostgreSQL database, private network only
+- **redis** - Redis cache, private network only
+- **backend** - Express.js API, private network only
+- **frontend** - Next.js application, private network only
 
 ## System Requirements
 

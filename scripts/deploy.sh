@@ -121,6 +121,9 @@ fi
 print_step "Starting backend and frontend..."
 $DC up -d backend frontend
 
+print_step "Starting edge nginx proxy..."
+$DC up -d nginx
+
 # Wait for app processes
 print_step "Waiting for services to start..."
 sleep 8
@@ -138,7 +141,7 @@ fi
 # Check backend health
 print_step "Checking backend health..."
 for i in $(seq 1 30); do
-    if curl -s http://localhost:5001/health > /dev/null 2>&1; then
+    if $DC exec -T backend node -e "require('http').get('http://127.0.0.1:5001/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"; then
         print_success "Backend is healthy"
         break
     elif [ "$i" -eq 30 ]; then
@@ -152,7 +155,7 @@ done
 # Check frontend health
 print_step "Checking frontend health..."
 for i in $(seq 1 30); do
-    if curl -s http://localhost:4000 > /dev/null 2>&1; then
+    if $DC exec -T frontend node -e "require('http').get('http://127.0.0.1:4000', (res) => process.exit(res.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))"; then
         print_success "Frontend is healthy"
         break
     elif [ "$i" -eq 30 ]; then
@@ -171,10 +174,10 @@ echo ""
 print_success "🎉 EduTube deployment completed!"
 echo ""
 echo -e "${BLUE}📱 Access your application:${NC}"
-echo -e "   Frontend: ${GREEN}http://localhost:4000${NC}"
-echo -e "   Backend API: ${GREEN}http://localhost:5001${NC}"
-echo -e "   Database: ${GREEN}PostgreSQL on localhost:5433${NC}"
-echo -e "   Redis: ${GREEN}Redis on localhost:6379${NC}"
+echo -e "   Frontend: ${GREEN}http://localhost${NC}"
+echo -e "   Backend API: ${GREEN}http://localhost/api${NC}"
+echo -e "   Database: ${GREEN}internal Docker network only${NC}"
+echo -e "   Redis: ${GREEN}internal Docker network only${NC}"
 echo ""
 echo -e "${BLUE}� Default Admin Credentials:${NC}"
 echo -e "   Email: ${GREEN}admin@gmail.com${NC}"
@@ -193,6 +196,6 @@ if command -v xdg-open > /dev/null; then
     read -p "Open application in browser? (y/n): " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        xdg-open http://localhost:4000
+        xdg-open http://localhost
     fi
 fi

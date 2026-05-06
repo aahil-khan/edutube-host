@@ -5,11 +5,12 @@ This guide explains how to run the EduTube application using Docker containers.
 ## Architecture
 
 The application consists of:
-- **Frontend**: Next.js application running on port 4000
-- **Backend**: Node.js Express API running on port 5001
-- **PostgreSQL**: Database on port 5432
-- **Redis**: Cache and session store on port 6379
-- **Elasticsearch**: Search engine on port 9200
+- **Nginx**: Public reverse proxy on port 80
+- **Frontend**: Next.js application on the private Docker network
+- **Backend**: Node.js Express API on the private Docker network
+- **PostgreSQL**: Database on the private Docker network
+- **Redis**: Cache and session store on the private Docker network
+- **Elasticsearch**: Search engine on the private Docker network
 
 ## Prerequisites
 
@@ -30,9 +31,9 @@ The application consists of:
    ```
 
 3. **Access the applications**:
-   - Frontend: http://localhost:4000
-   - Backend API: http://localhost:5001
-   - Database: localhost:5432
+   - Frontend: http://localhost
+   - Backend API: http://localhost/api
+   - Database: internal Docker network only
 
 ## Development Setup
 
@@ -84,7 +85,8 @@ The backend uses the following environment variables (configured in docker-compo
 
 - `NODE_ENV`: Environment mode (development/production)
 - `PORT`: Server port (4000)
-- `NEXT_PUBLIC_API_URL`: Backend API URL
+- `NEXT_PUBLIC_API_URL`: Browser-facing API base URL (`/api` in production)
+- `BACKEND_URL`: Internal backend URL used by server-side Next.js code (`http://backend:5001`)
 
 ## Useful Docker Commands
 
@@ -134,11 +136,11 @@ docker-compose exec backend npx prisma studio
 ## Troubleshooting
 
 ### Port Conflicts
-If you encounter port conflicts, modify the port mappings in `docker-compose.yml`:
+If you encounter port conflicts, modify the public Nginx host mapping in `docker-compose.yml`:
 
 ```yaml
 ports:
-  - "4001:4000"  # Change external port to 4001
+   - "8080:80"  # Change external port to 8080
 ```
 
 ### Database Connection Issues
