@@ -92,9 +92,7 @@ fi
 print_step "Applying Prisma migrations (one-shot backend container)..."
 print_step "Checking Prisma migration status..."
 if ! $DC run --rm --no-deps backend npx prisma migrate status; then
-    print_error "Prisma migration status check failed."
-    print_error "If schema changed, ensure a migration exists in prisma/migrations."
-    exit 1
+    print_warning "Initial migration status is non-zero (often means pending migrations). Continuing to migrate deploy."
 fi
 
 # --no-deps: do NOT start db-seed again (backend depends_on db-seed; without this, every
