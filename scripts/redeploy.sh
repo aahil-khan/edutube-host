@@ -144,6 +144,31 @@ $DC up -d --no-deps frontend
 print_step "Refreshing edge nginx proxy..."
 $DC up -d --no-deps --force-recreate --remove-orphans nginx
 
+print_step "Ensuring monitoring services are up..."
+$DC up -d prometheus alertmanager loki promtail grafana cadvisor
+
+print_step "Waiting for monitoring services health..."
+test_http_health() {
+  local url="$1"
+  local name="$2"
+  local max_attempts="${3:-30}"
+  for i in $(seq 1 "$max_attempts"); do
+    code="$(curl -s -o /dev/null -w "%{http_code}" "$url" || true)"
+    if [ "$code" = "200" ]; then
+      print_success "$name healthy"
+      return 0
+    fi
+    sleep 2
+  done
+  print_warning "$name health check did not pass at $url"
+  return 1
+}
+
+test_http_health "http://localhost:9090/-/healthy" "Prometheus" 30 || true
+test_http_health "http://localhost:3001/api/health" "Grafana" 30 || true
+test_http_health "http://localhost:3100/ready" "Loki" 30 || true
+test_http_health "http://localhost:9093/-/healthy" "Alertmanager" 30 || true
+
 print_step "Waiting for frontend health..."
 FRONTEND_OK=0
 for i in $(seq 1 40); do
@@ -167,5 +192,9 @@ echo ""
 print_success "Redeploy complete."
 echo -e "${BLUE}Frontend:${NC} http://localhost"
 echo -e "${BLUE}Backend API:${NC}  http://localhost/api"
+echo -e "${BLUE}Prometheus:${NC}   http://localhost:9090"
+echo -e "${BLUE}Grafana:${NC}      http://localhost:3001 (admin/admin)"
+echo -e "${BLUE}Loki:${NC}         http://localhost:3100"
+echo -e "${BLUE}Alertmanager:${NC} http://localhost:9093"
 echo ""
 print_warning "Note: services now stay on the private Docker network; only Nginx is published on the host."

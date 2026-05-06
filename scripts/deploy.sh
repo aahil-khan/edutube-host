@@ -124,6 +124,9 @@ $DC up -d backend frontend
 print_step "Starting edge nginx proxy..."
 $DC up -d nginx
 
+print_step "Starting monitoring services..."
+$DC up -d prometheus alertmanager loki promtail grafana cadvisor
+
 # Wait for app processes
 print_step "Waiting for services to start..."
 sleep 8
@@ -176,6 +179,10 @@ echo ""
 echo -e "${BLUE}📱 Access your application:${NC}"
 echo -e "   Frontend: ${GREEN}http://localhost${NC}"
 echo -e "   Backend API: ${GREEN}http://localhost/api${NC}"
+echo -e "   Prometheus: ${GREEN}http://localhost:9090${NC}"
+echo -e "   Grafana: ${GREEN}http://localhost:3001${NC} (admin/admin)"
+echo -e "   Loki: ${GREEN}http://localhost:3100${NC}"
+echo -e "   Alertmanager: ${GREEN}http://localhost:9093${NC}"
 echo -e "   Database: ${GREEN}internal Docker network only${NC}"
 echo -e "   Redis: ${GREEN}internal Docker network only${NC}"
 echo ""

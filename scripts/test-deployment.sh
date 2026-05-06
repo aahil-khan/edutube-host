@@ -52,6 +52,13 @@ else
 fi
 
 echo ""
+echo "🔍 Monitoring Stack Tests:"
+test_endpoint "http://localhost:9090/-/healthy" "Prometheus health endpoint"
+test_endpoint "http://localhost:3001/api/health" "Grafana health endpoint"
+test_endpoint "http://localhost:3100/ready" "Loki ready endpoint"
+test_endpoint "http://localhost:9093/-/healthy" "Alertmanager health endpoint"
+
+echo ""
 echo "🐳 Docker Container Status:"
 if docker compose version &>/dev/null; then
     docker compose ps
@@ -65,6 +72,7 @@ echo -e "✅ Backend is healthy on the private Docker network"
 echo -e "✅ Frontend is running and serving pages"
 echo -e "✅ API routes are properly configured"
 echo -e "✅ Database and Redis are healthy"
+echo -e "✅ Monitoring stack endpoints are reachable"
 echo -e "✅ Docker networking is working correctly"
 
 echo ""

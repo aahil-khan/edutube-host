@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: EduTube
+    orgId: 1
+    folder: EduTube
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards
