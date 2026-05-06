@@ -15,9 +15,9 @@ fi
 
 echo "Scaling backend to $BACKEND and frontend to $FRONTEND (postgres/redis remain 1)"
 
-$DC up -d --build --scale backend="$BACKEND" --scale frontend="$FRONTEND"
+$DC up -d --build --remove-orphans --scale backend="$BACKEND" --scale frontend="$FRONTEND"
 
-echo "Refreshing backend/frontend load balancers"
-$DC up -d --force-recreate backend-lb frontend-lb
+echo "Refreshing edge nginx proxy"
+$DC up -d --no-deps --force-recreate nginx
 
-echo "Scaled. Use 'docker-compose ps' to verify containers and 'docker-compose logs -f' to monitor."
+echo "Scaled. Use '$DC ps' to verify containers and '$DC logs -f' to monitor."

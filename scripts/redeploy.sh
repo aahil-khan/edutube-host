@@ -142,7 +142,7 @@ print_step "Redeploying frontend without full stack teardown..."
 $DC up -d --no-deps frontend
 
 print_step "Refreshing edge nginx proxy..."
-$DC up -d --no-deps --force-recreate nginx
+$DC up -d --no-deps --force-recreate --remove-orphans nginx
 
 print_step "Waiting for frontend health..."
 FRONTEND_OK=0
