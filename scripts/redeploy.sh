@@ -160,7 +160,7 @@ test_http_health() {
   local name="$2"
   local max_attempts="${3:-30}"
   for i in $(seq 1 "$max_attempts"); do
-    code="$(curl -s -o /dev/null -w "%{http_code}" "$url" || true)"
+    code="$(curl -s -L -o /dev/null -w "%{http_code}" "$url" || true)"
     if [ "$code" = "200" ]; then
       print_success "$name healthy"
       return 0
@@ -205,3 +205,4 @@ echo -e "${BLUE}Loki:${NC}         http://localhost/monitoring/loki/"
 echo -e "${BLUE}Alertmanager:${NC} http://localhost/monitoring/alertmanager/"
 echo ""
 print_warning "Note: services now stay on the private Docker network; only Nginx is published on the host."
+print_warning "Note: services now stay on the private Docker network; only Nginx is published on the host. HTTPS is enabled on the edge and HTTP is redirected to HTTPS."
